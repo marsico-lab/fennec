@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fennec"
+version = "0.1.0"
+description = "A package for siRNA related tasks like predicting activity, toxicity, and designing chemical modifications."
+authors = [
+    { name = "Alexander Larsen", email = "alarsen525@gmail.com" }
+]
+readme = "README.md"  # Ensure you have a README.md file in your project root
+license = { file = "LICENSE" }
+dependencies = [
+    "bioinutils",
+    "biopython>=1.86",
+    "click>=8.3.1",
+    "edlib>=1.3.9.post1",
+    "matplotlib>=3.10.8",
+    "numpy>=2.4.3",
+    "pandas>=3.0.1",
+    "primer3-py>=2.3.0",
+    "scikit-learn>=1.8.0",
+    "scipy>=1.17.1",
+    "seaborn>=0.13.2",
+    "sh>=2.2.2",
+    "tqdm>=4.67.3",
+    "xmltodict>=1.0.4",
+]
+
+# Entry point to your package
+[tool.setuptools]
+packages = ["fennec"]
+
+# Specify the source directory
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.uv.sources]
+bioinutils = { git = "https://github.com/Zinthrow/BioInUtils.git" }

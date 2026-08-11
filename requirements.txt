@@ -1,0 +1,55 @@
+# ============================================================
+# fennec — pip requirements
+# ============================================================
+# For a complete reproducible environment use environment.yml
+# (conda) which also handles ViennaRNA and CUDA PyTorch wheels.
+#
+# Quick install (assumes CUDA 12.1 and ViennaRNA already present):
+#   pip install -r requirements.txt
+#   pip install git+https://github.com/Zinthrow/BioInUtils.git
+#   git clone https://github.com/bowang-lab/Orthrus.git && pip install -e Orthrus/ --no-deps
+# ============================================================
+
+# Core data / ML
+numpy
+pandas
+scipy
+scikit-learn
+matplotlib
+seaborn
+tqdm
+click
+
+# PyTorch — install with the CUDA 12.1 wheel for GPU support:
+#   pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cu121
+torch>=2.2.2
+
+# HuggingFace (loads Orthrus via AutoModel)
+transformers
+
+# RNA Foundation Models
+rna-fm           # provides `fm` module (RNA-FM T12)
+# rinalmo        # optional alternative FM
+
+# Orthrus model backbone — requires CUDA 12.1 toolkit:
+#   pip install causal_conv1d==1.2.0.post2
+#   pip install mamba-ssm==1.2.0.post1
+
+# Bioinformatics
+biopython
+edlib
+# primer3-py: BioInUtils requires ==2.0.3; Python >=3.13 needs >=2.3.0
+# On Python 3.10–3.12:  pip install primer3-py==2.0.3
+# On Python 3.13+:      pip install primer3-py  (installs >=2.3.0, API-compatible)
+primer3-py
+xmltodict           # required by BioInUtils
+sh                  # required by BioInUtils (shells out to RNAfold)
+
+# ViennaRNA (RNAfold CLI) — system package, not pip:
+#   conda: conda install -c bioconda viennarna
+#   apt:   sudo apt-get install vienna-rna
+#   brew:  brew install viennarna
+
+# GitHub-only packages (see environment.yml for details):
+#   pip install git+https://github.com/Zinthrow/BioInUtils.git
+#   pip install -e Orthrus/ --no-deps   # after: git clone https://github.com/bowang-lab/Orthrus.git

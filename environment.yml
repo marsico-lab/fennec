@@ -1,0 +1,93 @@
+name: fennec
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - bioconda
+  - defaults
+
+dependencies:
+  # Python 3.12 recommended — primer3-py==2.0.3 (required by BioInUtils) does
+  # not build on Python 3.14 due to deprecated Cython 'IF' statements.
+  # If you must use Python >=3.13, install BioInUtils with --no-deps and use
+  # the newer primer3-py (>=2.3.0) which is API-compatible for fennec's needs.
+  - python=3.12
+  - pip
+
+  # Core data / ML
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - tqdm
+  - jupyter
+  - notebook
+
+  # PyTorch with CUDA 12.1 (required by mamba-ssm / Orthrus backbone)
+  - pytorch=2.2.2
+  - pytorch-cuda=12.1
+
+  # ViennaRNA — required by bioinutils.vienna.rfold (thermo features)
+  # Provides the RNAfold CLI tool called via the `sh` Python package
+  - viennarna  # available in bioconda and conda-forge
+
+  - pip:
+      # Core bioinformatics
+      - biopython
+      - edlib
+      - primer3-py==2.0.3
+      - click
+      - xmltodict        # required by BioInUtils
+      - sh               # required by BioInUtils (calls RNAfold)
+
+      # RNA Foundation Models
+      - rna-fm           # provides the `fm` module (RNA-FM T12)
+      - transformers     # HuggingFace — used to load Orthrus via AutoModel
+      # - rinalmo        # optional alternative FM
+
+      # Orthrus model backbone (Mamba SSM — requires CUDA 12.1 headers):
+      - causal_conv1d==1.2.0.post2
+      - mamba-ssm==1.2.0.post1
+
+      # fennec (this package) — editable install from repo root
+      - -e .
+
+      # ---------------------------------------------------------------
+      # GitHub-only packages — install MANUALLY after `conda env create`:
+      #
+      #   pip install git+https://github.com/Zinthrow/BioInUtils.git
+      #
+      #     Provides: bioinutils.seqfeatures.utils, bioinutils.vienna
+      #     Used for: Tm, homo/heterodimer dG, Vienna secondary structure
+      #     (thermo features via --with-thermo flag)
+      #
+      #     NOTE: BioInUtils pins primer3-py==2.0.3. On Python >=3.13 you
+      #     may need: pip install git+https://github.com/Zinthrow/BioInUtils.git
+      #                           --no-deps
+      #
+      #   git clone https://github.com/bowang-lab/Orthrus.git
+      #   pip install -e Orthrus/ --no-deps   (avoids GenomeKit requirement)
+      #
+      #     Provides: orthrus.gk_utils.seq_to_oh
+      #     Used for: Orthrus 4-track mRNA embedding (--fm-type orthrus_4track)
+      #     The model weights are downloaded automatically from HuggingFace:
+      #       AutoModel.from_pretrained("antichronology/orthrus-4-track",
+      #                                 trust_remote_code=True)
+      # ---------------------------------------------------------------
+
+# -----------------------------------------------------------------------
+# Quick-start (after cloning this repo):
+#
+#   conda env create -f environment.yml
+#   conda activate fennec
+#
+#   # GitHub-only packages:
+#   pip install git+https://github.com/Zinthrow/BioInUtils.git
+#   git clone https://github.com/bowang-lab/Orthrus.git
+#   pip install -e Orthrus/ --no-deps
+#
+#   # Verify:
+#   python tests/test_env.py
+# -----------------------------------------------------------------------
