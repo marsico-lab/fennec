@@ -2,7 +2,7 @@
 
 # FENNEC
 
-**Fine-Tuned Ensemble of Neural Networks for siRNA Efficiency Characterization** — public code release accompanying the paper *"FENNEC: Fine-Tuned Ensemble Neural Networks Accelerate Chemically Modified siRNA Screening and Design"* (submitted to *Nature Computational Science*; link added on acceptance).
+**Fine-Tuned Ensemble of Neural Networks for siRNA Efficiency Characterization** — public code release accompanying the paper *"FENNEC: Fine-Tuned Ensemble Neural Networks Accelerate Chemically Modified siRNA Screening and Design"* .
 
 This repository provides the **inference, generative design, feature-engineering, and publication-analysis** code for FENNEC. Training code is not included in this release — the released checkpoints (see [Model weights](#model-weights)) are intended for inference and design.
 
