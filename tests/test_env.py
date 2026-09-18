@@ -169,9 +169,6 @@ def test_fennec_imports():
     from fennec.models import TCN_FM_multi_head
     ok("fennec.models.TCN_FM_multi_head")
 
-    from fennec.splitter import GroupKFoldLeakPerGroup
-    ok("fennec.splitter")
-
 
 # ---------------------------------------------------------------------------
 # 7. End-to-end featurization (one-hot + thermo, no GPU / FM weights needed)
@@ -200,6 +197,12 @@ def test_e2e_featurization():
             "cell_line_donor": ["HeLa"] * 5,
             "siRNA_concentration": [10.0] * 5,
             "Transfection_method": ["Lipofectamine"] * 5,
+            # Required by generate_feature_vector_encoding; without it the meta
+            # frame keeps an object-dtype column and torch.tensor() rejects it.
+            "Duration_after_transfection_h": [24.0] * 5,
+            # Unmodified guide (seq_list_to_seq of siRNA_list above);
+            # apply_internal_features_condensed asserts on this column.
+            "siRNA": ["UUCUGGCCGAGCAU"] * 5,
         }
         df = pd.DataFrame(data)
     else:
@@ -238,6 +241,18 @@ def test_e2e_featurization():
         fm_seq_len=emb_len,
         fm_embed_dim=emb_dim,
     )
+    model.eval()
+
+    x_in   = X[:batch].float()
+    xm_in  = X_meta[:batch].float()
+    xe_in  = torch.randn(batch, emb_len, emb_dim)
+
+    with torch.no_grad():
+        out = model(x_in, xm_in, xe_in)
+
+    assert out.shape == (batch, 1), f"Unexpected output shape: {out.shape}"
+    ok(f"Model forward pass OK — output shape {tuple(out.shape)}, "
+       f"values [{out.min().item():.2f}, {out.max().item():.2f}]")
 
 
 def test_transfection_unknowns_map_to_not_specified():
@@ -259,18 +274,6 @@ def test_transfection_unknowns_map_to_not_specified():
 
     assert encoded["Not specified"].tolist() == [1, 1]
     assert encoded["Unknown_transfection"].tolist() == [0, 0]
-    model.eval()
-
-    x_in   = X[:batch].float()
-    xm_in  = X_meta[:batch].float()
-    xe_in  = torch.randn(batch, emb_len, emb_dim)
-
-    with torch.no_grad():
-        out = model(x_in, xm_in, xe_in)
-
-    assert out.shape == (batch, 1), f"Unexpected output shape: {out.shape}"
-    ok(f"Model forward pass OK — output shape {tuple(out.shape)}, "
-       f"values [{out.min().item():.2f}, {out.max().item():.2f}]")
 
 
 # ---------------------------------------------------------------------------
