@@ -11,7 +11,7 @@
 # ============================================================
 
 # Core data / ML
-numpy
+numpy<2          # torch 2.2.2 is built against the NumPy 1.x C API
 pandas
 scipy
 scikit-learn
@@ -25,7 +25,7 @@ click
 torch>=2.2.2
 
 # HuggingFace (loads Orthrus via AutoModel)
-transformers
+transformers<5   # v5 requires torch>=2.5 and disables its torch backend on 2.2.2
 
 # RNA Foundation Models
 rna-fm           # provides `fm` module (RNA-FM T12)
@@ -34,6 +34,12 @@ rna-fm           # provides `fm` module (RNA-FM T12)
 # Orthrus model backbone — requires CUDA 12.1 toolkit:
 #   pip install causal_conv1d==1.2.0.post2
 #   pip install mamba-ssm==1.2.0.post1
+
+# Publication analyses only (publication_analyses/)
+captum==0.7.0    # integrated gradients (Fig 5); version used in the paper
+umap-learn       # dataset projections
+requests         # competitor prediction APIs
+urllib3
 
 # Bioinformatics
 biopython

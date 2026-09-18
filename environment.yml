@@ -1,10 +1,12 @@
 name: fennec
 channels:
+  # `defaults` (repo.anaconda.com) is deliberately omitted: every package below is
+  # available from conda-forge/bioconda, and Anaconda's default channels require a
+  # paid licence for larger organisations and are blocked on many research networks.
   - pytorch
   - nvidia
   - conda-forge
   - bioconda
-  - defaults
 
 dependencies:
   # Python 3.12 recommended — primer3-py==2.0.3 (required by BioInUtils) does
@@ -15,7 +17,11 @@ dependencies:
   - pip
 
   # Core data / ML
-  - numpy
+  # numpy MUST stay <2: pytorch 2.2.2 (pinned below) is compiled against the
+  # NumPy 1.x C API. With numpy>=2 torch still imports but its NumPy interop is
+  # dead ("Failed to initialize NumPy: _ARRAY_API not found"), which breaks every
+  # tensor<->array conversion in the preprocessing pipeline.
+  - numpy<2
   - pandas
   - scipy
   - scikit-learn
@@ -24,6 +30,7 @@ dependencies:
   - tqdm
   - jupyter
   - notebook
+  - pytest           # README documents `pytest tests/` as the verification step
 
   # PyTorch with CUDA 12.1 (required by mamba-ssm / Orthrus backbone)
   - pytorch=2.2.2
@@ -44,12 +51,30 @@ dependencies:
 
       # RNA Foundation Models
       - rna-fm           # provides the `fm` module (RNA-FM T12)
-      - transformers     # HuggingFace — used to load Orthrus via AutoModel
-      # - rinalmo        # optional alternative FM
+      # transformers MUST stay <5: v5 requires torch>=2.5 and silently disables its
+      # PyTorch backend against the pinned torch 2.2.2, so AutoModel.from_pretrained
+      # (how Orthrus is loaded) stops working.
+      - transformers<5   # HuggingFace — used to load Orthrus via AutoModel
+      # - rinalmo        # optional alternative FM (guarded import in fm_utils.py)
 
-      # Orthrus model backbone (Mamba SSM — requires CUDA 12.1 headers):
-      - causal_conv1d==1.2.0.post2
-      - mamba-ssm==1.2.0.post1
+      # publication_analyses/ only — imported by the paper's analysis scripts
+      - captum==0.7.0    # integrated gradients (Fig 5); version used in the paper
+      - umap-learn       # dataset projections (OligoFormer inter-dataset panel)
+      - requests         # competitor prediction APIs
+      - urllib3
+
+      # NOTE: the Orthrus Mamba backbone (causal_conv1d, mamba-ssm) is deliberately
+      # NOT installed here. Both compile CUDA kernels from source, which needs a
+      # CUDA 12.1 toolkit (nvcc) and must be run with --no-build-isolation so the
+      # build can see torch. Installing them inline makes `conda env create` fail on
+      # any machine without nvcc, including CPU-only machines and cluster login
+      # nodes. Install them as a separate step after activating the environment:
+      #
+      #   export TORCH_CUDA_ARCH_LIST=8.9   # your GPU's compute capability
+      #   pip install --no-build-isolation causal_conv1d==1.2.0.post2 mamba-ssm==1.2.0.post1
+      #
+      # They are required only for the Orthrus 4-track FM backbone; the rest of
+      # fennec (featurization, HELM conversion, model definitions) works without them.
 
       # fennec (this package) — editable install from repo root
       - -e .

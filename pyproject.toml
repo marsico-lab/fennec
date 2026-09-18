@@ -9,32 +9,70 @@ description = "A package for siRNA related tasks like predicting activity, toxic
 authors = [
     { name = "Alexander Larsen", email = "alarsen525@gmail.com" }
 ]
-readme = "README.md"  # Ensure you have a README.md file in your project root
+readme = "README.md"
 license = { file = "LICENSE" }
+# primer3-py==2.0.3 (pinned by BioInUtils) does not build on Python 3.14.
+requires-python = ">=3.10,<3.14"
 dependencies = [
-    "bioinutils",
-    "biopython>=1.86",
-    "click>=8.3.1",
-    "edlib>=1.3.9.post1",
-    "matplotlib>=3.10.8",
-    "numpy>=2.4.3",
-    "pandas>=3.0.1",
-    "primer3-py>=2.3.0",
-    "scikit-learn>=1.8.0",
-    "scipy>=1.17.1",
-    "seaborn>=0.13.2",
-    "sh>=2.2.2",
-    "tqdm>=4.67.3",
-    "xmltodict>=1.0.4",
+    # Core scientific stack. Floors are the oldest versions fennec is known to
+    # work with, not the versions that happened to be installed at release time,
+    # so that this resolves against the conda environment in environment.yml.
+    "numpy>=1.24,<2",      # torch 2.2.2 is built against the NumPy 1.x C API
+    "pandas>=2.0",
+    "scipy>=1.10",
+    "scikit-learn>=1.3",
+    "matplotlib>=3.7",
+    "seaborn>=0.13",
+    "tqdm>=4.65",
+    "click>=8.1",
+
+    # Model stack — fennec.models is a PyTorch package and cannot import without these.
+    "torch>=2.2.2",
+    "transformers<5",      # v5 requires torch>=2.5 and disables its torch backend on 2.2.2
+
+    # Bioinformatics
+    "biopython>=1.81",
+    "edlib>=1.3.9",
+    # BioInUtils pins ==2.0.3; on Python >=3.13 use >=2.3.0 (API-compatible here).
+    "primer3-py",
+    "xmltodict",   # required by BioInUtils
+    "sh",          # required by BioInUtils (shells out to RNAfold)
 ]
 
-# Entry point to your package
-[tool.setuptools]
-packages = ["fennec"]
+[project.optional-dependencies]
+# Reproducing the paper's analyses (publication_analyses/).
+analysis = [
+    "captum==0.7.0",   # integrated gradients (Fig 5)
+    "umap-learn",      # dataset projections
+    "requests",        # competitor prediction APIs
+    "urllib3",
+]
+# Foundation-model backends. `rna-fm` provides the `fm` module; rinalmo is optional.
+fm = [
+    "rna-fm",
+    # "rinalmo",
+]
 
-# Specify the source directory
+# NOTE: two dependencies are NOT declared here because they are not on PyPI and
+# pip cannot resolve them. Install them manually (see README / environment.yml):
+#
+#   pip install git+https://github.com/Zinthrow/BioInUtils.git
+#   git clone https://github.com/bowang-lab/Orthrus.git && pip install -e Orthrus/ --no-deps
+#
+# The Orthrus Mamba backbone additionally needs CUDA 12.1:
+#   pip install --no-build-isolation causal_conv1d==1.2.0.post2 mamba-ssm==1.2.0.post1
+
+[tool.setuptools]
+# Subpackages must be listed explicitly, otherwise a non-editable install ships
+# only the top-level `fennec` and `from fennec.models import MODELS` fails.
+packages = ["fennec", "fennec.models", "fennec.seq_designer"]
+
 [tool.setuptools.package-dir]
 "" = "src"
+
+[tool.setuptools.package-data]
+# featurizer.py reads support_files/Human_seed_toxicity.json at import time.
+fennec = ["support_files/*.json", "support_files/*.csv"]
 
 [tool.uv.sources]
 bioinutils = { git = "https://github.com/Zinthrow/BioInUtils.git" }
