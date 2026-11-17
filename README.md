@@ -150,7 +150,7 @@ Citation info will be added on paper acceptance.
 
 ## License
 
-This work is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). See `LICENSE` for the full text.
+This work is licensed under [GPLv3](https://choosealicense.com/licenses/gpl-3.0/). See `LICENSE` for the full text.
 
 ## Contact
 
